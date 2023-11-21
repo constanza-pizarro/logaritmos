@@ -17,7 +17,7 @@ bool compare_x(const Point& a, const Point& b) {
 }
 
 double distance(const Point& a, const Point& b) {
-    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
 
 double closest_pair_dist(vector<Point>& arr, int left, int right) {
@@ -54,6 +54,7 @@ double closest_pair_dist(vector<Point>& arr, int left, int right) {
         }
     }
 
+    // retorna la distancia mínima
     return LRmin;
 }
 

@@ -84,20 +84,8 @@ double randomizedAlgorithm(int n) {
     // Distancia mínima entre los puntos de cada par
     double d = numeric_limits<double>::max();
 
-    for (const auto& pair : pointPairs) {
-        double dist = distance(pair.first, pair.second);
-        if (dist < d) {
-            d = dist;
-        }
-    }
-
-    /////////////////////////
-    // HashTableModulo hashTable(d): Crea una instancia de la clase HashTableModulo 
-    // utilizando el valor de d, que es la distancia mínima entre los puntos en los pares
-
     // Utilizar la Hash Table con el método de hashing utilizando el operador módulo
     HashTableModulo hashTable(d);
-
 
     // Inserción de puntos en la Hash Table: Itera sobre todos los pares de puntos y 
     // los inserta en la Hash Table. Esto agrupa los puntos en celdas de la grilla basada 
@@ -107,18 +95,10 @@ double randomizedAlgorithm(int n) {
         hashTable.insert(pair.second);
     }
 
-
-    /*
-    Comparación de distancias entre puntos en la misma casilla y casillas vecinas:
-    Falta la implementación específica de esta parte. Aquí deberías completar la lógica 
-    para comparar las distancias entre puntos en la misma casilla y casillas vecinas.
-    */
-    
-    // Comparar distancias entre puntos en la misma casilla y casillas vecinas
     for (const auto& pair : pointPairs) {
         // Obtener los puntos en la misma celda que el primer punto del par
         vector<Point>& sameCellPoints = hashTable.getPoints(pair.first);
-    
+
         // Comparar distancias entre los puntos en la misma celda
         for (const Point& point : sameCellPoints) {
             double dist = distance(pair.first, point);
@@ -126,7 +106,7 @@ double randomizedAlgorithm(int n) {
                 d = dist;
             }
         }
-    
+
         // Comparar distancias entre los puntos en las casillas vecinas
         for (int i = -1; i <= 1; ++i) {
             for (int j = -1; j <= 1; ++j) {
@@ -134,10 +114,10 @@ double randomizedAlgorithm(int n) {
                     // No necesitamos comparar con la casilla actual
                     continue;
                 }
-    
+
                 // Obtener los puntos en la celda vecina
                 vector<Point>& neighborCellPoints = hashTable.getPoints(Point(pair.first.x + i, pair.first.y + j));
-    
+
                 // Comparar distancias entre los puntos en la celda vecina
                 for (const Point& point : neighborCellPoints) {
                     double dist = distance(pair.first, point);

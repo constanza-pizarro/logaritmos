@@ -1,7 +1,7 @@
-#include "../aleatorizado.h"
+#include "../al2.h"
 
 int main() {
-    int n=8;
+    int n = 8;
 
     double result = randomizedAlgorithm(n);
 
