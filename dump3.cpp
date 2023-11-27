@@ -88,14 +88,17 @@ int main() {
     int n = 100;
     vector<pair<Point, Point>> randomPoints = generateRandomPointPairs(n);
 
-    double d = 0.1;/*numeric_limits<double>::max();
+    // Comment out the previous initialization of d
+    // double d = 0.1;
 
+    // Uncomment this block to find the minimum distance in randomPoints
+    double d = numeric_limits<double>::max();
     for (const auto& pair : randomPoints) {
-        double dist = calculateDistance(pair.first, pair.second);
+     double dist = calculateDistance(pair.first, pair.second);
         if (dist < d) {
-            d = dist;
+         d = dist;
         }
-    }*/
+    }
 
 
     double minDistance = findMinDistanceOptimized(randomPoints, d);

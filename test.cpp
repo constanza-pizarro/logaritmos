@@ -9,9 +9,9 @@
 #include <chrono>
 #include <ctime> // for clock_t, clock(), CLOCKS_PER_SEC
 #include <cmath> // for std::abs
-#include "aleatorizado.h"
+//#include "aleatorizado.h"
 #include "div_and_con.h"
-#include "a.h" // momentaneo
+#include "dump.h"
 
 using namespace chrono;
 
@@ -23,6 +23,10 @@ int main() {
 
     vector<double> averageTime_per_n_dpr(U); // dividir para reinar
     vector<int> average_k_per_n_a(U); // aleatorizado
+    
+    // Utilizar el tiempo actual como semilla para mt19937
+    unsigned seed = static_cast<unsigned>(chrono::high_resolution_clock::now().time_since_epoch().count());
+    mt19937 randomGenerator(seed);
 
     // Trabajaremos con n ∈ [5000000, ..., 50000000]
     for (int n=5000000; n<=U; n+=5000000) {
@@ -33,12 +37,11 @@ int main() {
         // Repeticiones de los algoritmos
         for (int i=0; i<=L; i++) { // > 100
 
-            // arreglo 
-            vector<Point> arr = generateRandomPoints(n);
+            vector<Point> arr = generateRandomPoints(n, randomGenerator);
 
             cout << "-------------------------------- Dividir para reinar --------------------------------" << endl;
             auto begin_dpr = high_resolution_clock::now();
-            // divide_and_conquer(arr); // recibe como parametro arr
+            divide_and_conquer(arr);
             auto end_dpr = high_resolution_clock::now();
 
             double time = duration_cast<nanoseconds>(end_dpr - begin_dpr).count() / 1e9;
@@ -47,7 +50,7 @@ int main() {
             
             cout << "-------------------------------- Aleatorizado --------------------------------" << endl;
             auto begin_a = high_resolution_clock::now();
-            findMinimumDistanceOptimized(arr);
+            findMinDistanceOptimized(arr);
             auto end_a = high_resolution_clock::now();
 
             double time = duration_cast<nanoseconds>(end_a - begin_a).count() / 1e9;

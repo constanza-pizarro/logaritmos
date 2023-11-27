@@ -16,11 +16,9 @@ double calculateDistance(Point p1, Point p2) {
     return sqrt(pow((p2.x - p1.x), 2) + pow((p2.y - p1.y), 2));
 }
 
-vector<Point> generateRandomPoints(int n) {
+vector<Point> generateRandomPoints(int n, mt19937& gen) {
     vector<Point> points;
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> dis(0.0, 1.0); // Rango del plano [0, 1)
+    uniform_real_distribution<> dis(0.0, 1.0);
 
     for (int i = 0; i < n; ++i) {
         Point p;
@@ -30,6 +28,7 @@ vector<Point> generateRandomPoints(int n) {
     }
     return points;
 }
+
 
 double findMinDistance(vector<Point>& points) {
     double minDistance = numeric_limits<double>::infinity();
@@ -44,12 +43,15 @@ double findMinDistance(vector<Point>& points) {
 
 double findMinDistanceOptimized(vector<Point>& points) {
     double minDistance = numeric_limits<double>::infinity();
-    double d = findMinDistance(points);
+    double d = findMinDistance(points);  // Calcular la distancia mínima inicial
     unordered_map<int, unordered_map<int, vector<Point>>> grid;
 
+    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
+    d /= 2.0;
+
     for (Point& p : points) {
-        int gridX = static_cast<int>(p.x / d);
-        int gridY = static_cast<int>(p.y / d);
+        int gridX = static_cast<int>(p.x / (d / 2));
+        int gridY = static_cast<int>(p.y / (d / 2));
         grid[gridX][gridY].push_back(p);
     }
 
@@ -68,6 +70,7 @@ double findMinDistanceOptimized(vector<Point>& points) {
                             minDistance = min(minDistance, distance);
                         }
                     }
+                    
                 }
             }
         }
@@ -76,17 +79,31 @@ double findMinDistanceOptimized(vector<Point>& points) {
     return minDistance;
 }
 
-int main() {
+/*int main() {
     int n = 100;
-    vector<Point> randomPoints = generateRandomPoints(n);
+    vector<Point> randomPoints;
+
+    // Utilizar el tiempo actual como semilla para mt19937
+    unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    mt19937 randomGenerator(seed);
+
+    cout << "Semilla utilizada: " << seed << endl;
+
+    randomPoints = generateRandomPoints(n, randomGenerator);
+
+    // Imprimir puntos generados
+    cout << "Puntos generados:" << endl;
+    for (const auto& point : randomPoints) {
+        cout << "(" << point.x << ", " << point.y << ")" << endl;
+    }
 
     auto start = high_resolution_clock::now();
     double minDistanceUsingUnorderedMap = findMinDistanceOptimized(randomPoints);
     auto stop = high_resolution_clock::now();
 
     auto duration = duration_cast<milliseconds>(stop - start);
-
     cout << "N: " << n << ", Distancia minima: " << minDistanceUsingUnorderedMap << ", Tiempo: " << duration.count() << " ms" << endl;
-    
+
     return 0;
-}
+}*/
+
