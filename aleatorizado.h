@@ -47,9 +47,6 @@ vector<pair<Point, Point>> generateRandomPointPairs(int n) {
 
 
 
-
-
-
 // Implementación de la Hash Table utilizando el operador módulo
 class HashTableModulo {
 public:
