@@ -16,7 +16,7 @@
 using namespace chrono;
 
 // Número de consultas
-#define L 100
+#define L 101
 #define U 50000000
 
 int main() {
@@ -34,35 +34,39 @@ int main() {
         vector<double> times_dpr(L);
         vector<double> times_a(L);
 
+        // Utilizar el tiempo actual como semilla para mt19937
+        unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        mt19937 randomGenerator(seed);
+        
+        vector<Point> arr = generateRandomPoints(n, randomGenerator);
+        vector<Point> arr2(arr.size());
+
+        copy(arr.begin(), arr.end(), arr2.begin());
+
         // Repeticiones de los algoritmos
-        for (int i=0; i<=L; i++) { // > 100
-            // Utilizar el tiempo actual como semilla para mt19937
-            unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-            mt19937 randomGenerator(seed);
-
-            cout << "Semilla utilizada: " << seed << endl;
-
+        for (int i=0; i<L; i++) { // > 100
+            
             cout << "Consulta numero " << i+1 << endl;
 
-            vector<Point> arr = generateRandomPoints(n, randomGenerator);
 
             cout << "-------------------------------- Dividir para reinar --------------------------------" << endl;
             auto begin_dpr = high_resolution_clock::now();
-            double res = divide_and_conquer(arr);
+            double res = divide_and_conquer(arr2);
             auto end_dpr = high_resolution_clock::now();
 
             cout << res << endl;
-            double time1 = duration_cast<nanoseconds>(end_dpr - begin_dpr).count() / 1e9;
+            double time1 = duration_cast<milliseconds>(end_dpr - begin_dpr).count();
             times_dpr[i] = time1;
-            
             
             cout << "-------------------------------- Aleatorizado --------------------------------" << endl;
             auto begin_a = high_resolution_clock::now();
             double res2 = findMinDistanceOptimized(arr);
             auto end_a = high_resolution_clock::now();
             cout << res2 << endl;
-            double time2 = duration_cast<nanoseconds>(end_a - begin_a).count() / 1e9;
+            double time2 = duration_cast<milliseconds>(end_a - begin_a).count();
             times_a[i] = time2;
+    
+            cout << endl;
 
         }
 

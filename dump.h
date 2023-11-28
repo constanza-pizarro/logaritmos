@@ -7,7 +7,7 @@
 #include <limits>
 
 using namespace std;
-//using namespace std::chrono;
+using namespace std::chrono;
 
 struct Point {
     double x, y;
@@ -26,7 +26,7 @@ vector<Point> generateRandomPoints(int n, mt19937& gen) {
         p.x = dis(gen);
         p.y = dis(gen);
         points.push_back(p);
-    }
+    }*/
     int i=0;
     while (i<n) { 
       double x = dis(gen);
@@ -39,19 +39,7 @@ vector<Point> generateRandomPoints(int n, mt19937& gen) {
         points.push_back(p);
         i++;
       }
-    }*/
-    while (points.size() < n) {
-        double x = dis(gen);
-        double y = dis(gen);
-
-        if (x < 1.0 && y < 1.0) {
-            Point p;
-            p.x = x;
-            p.y = y;
-            points.push_back(p);
-        }
     }
-
     return points;
 }
 
@@ -91,7 +79,7 @@ double findMinDistanceOptimized(vector<Point>& points) {
 
                     for (Point& neighbor : grid[i][j]) {
                         // Evitar comparar el mismo punto
-                        if (p.x != neighbor.x || p.y != neighbor.y) {
+                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
                             double distance = calculateDistance(p, neighbor);
                             minDistance = min(minDistance, distance);
                         }
@@ -104,6 +92,37 @@ double findMinDistanceOptimized(vector<Point>& points) {
 
     return minDistance;
 }
+
+/*
+void runAlgorithm(int n) {
+    // Utilizar el tiempo actual como semilla para mt19937
+    unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    mt19937 gen(seed);
+
+    cout << "Semilla utilizada: " << seed << endl;
+
+    vector<Point> randomPoints = generateRandomPoints(n, gen);
+
+    auto start = high_resolution_clock::now();
+    double minDistanceUsingUnorderedMap = findMinDistanceOptimized(randomPoints);
+    auto stop = high_resolution_clock::now();
+
+    auto duration = duration_cast<milliseconds>(stop - start);
+    cout << "N: " << n << ", Distancia minima: " << minDistanceUsingUnorderedMap << ", Tiempo: " << duration.count() << " ms" << endl;
+}
+
+int main() {
+    int numIterations = 10;
+    int n = 100;
+
+    for (int i = 0; i < 100; ++i) {
+        cout << "\nIteración " << i + 1 << ":\n";
+        runAlgorithm(n);
+    }
+
+    return 0;
+}
+*/
 
 // Funciones auxiliares
 bool compare_x(const Point& a, const Point& b) {
@@ -152,33 +171,3 @@ double closest_pair_dist(vector<Point>& arr, int left, int right) {
 double divide_and_conquer(vector<Point>& arr) {
     return closest_pair_dist(arr, 0, arr.size());
 }
-
-
-/*int main() {
-    int n = 100;
-    vector<Point> randomPoints;
-
-    // Utilizar el tiempo actual como semilla para mt19937
-    unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-    mt19937 randomGenerator(seed);
-
-    cout << "Semilla utilizada: " << seed << endl;
-
-    randomPoints = generateRandomPoints(n, randomGenerator);
-
-    // Imprimir puntos generados
-    cout << "Puntos generados:" << endl;
-    for (const auto& point : randomPoints) {
-        cout << "(" << point.x << ", " << point.y << ")" << endl;
-    }
-
-    auto start = high_resolution_clock::now();
-    double minDistanceUsingUnorderedMap = findMinDistanceOptimized(randomPoints);
-    auto stop = high_resolution_clock::now();
-
-    auto duration = duration_cast<milliseconds>(stop - start);
-    cout << "N: " << n << ", Distancia minima: " << minDistanceUsingUnorderedMap << ", Tiempo: " << duration.count() << " ms" << endl;
-
-    return 0;
-}*/
-

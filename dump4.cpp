@@ -101,12 +101,6 @@ void runAlgorithm(int n) {
 
     vector<Point> randomPoints = generateRandomPoints(n, gen);
 
-    // Imprimir puntos generados
-    /*cout << "Puntos generados:" << endl;
-    for (const auto& point : randomPoints) {
-        cout << "(" << point.x << ", " << point.y << ")" << endl;
-    }*/
-
     auto start = high_resolution_clock::now();
     double minDistanceUsingUnorderedMap = findMinDistanceOptimized(randomPoints);
     auto stop = high_resolution_clock::now();
@@ -119,7 +113,7 @@ int main() {
     int numIterations = 10;
     int n = 100;
 
-    for (int i = 0; i < 101; ++i) {
+    for (int i = 0; i < 100; ++i) {
         cout << "\nIteración " << i + 1 << ":\n";
         runAlgorithm(n);
     }
