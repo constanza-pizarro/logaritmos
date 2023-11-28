@@ -7,7 +7,7 @@
 #include <limits>
 
 using namespace std;
-//using namespace std::chrono;
+using namespace std::chrono;
 
 struct Point {
     double x, y;
@@ -26,7 +26,7 @@ vector<Point> generateRandomPoints(int n, mt19937& gen) {
         p.x = dis(gen);
         p.y = dis(gen);
         points.push_back(p);
-    }
+    }*/
     int i=0;
     while (i<n) { 
       double x = dis(gen);
@@ -39,19 +39,7 @@ vector<Point> generateRandomPoints(int n, mt19937& gen) {
         points.push_back(p);
         i++;
       }
-    }*/
-    while (points.size() < n) {
-        double x = dis(gen);
-        double y = dis(gen);
-
-        if (x < 1.0 && y < 1.0) {
-            Point p;
-            p.x = x;
-            p.y = y;
-            points.push_back(p);
-        }
     }
-
     return points;
 }
 
@@ -91,7 +79,7 @@ double findMinDistanceOptimized(vector<Point>& points) {
 
                     for (Point& neighbor : grid[i][j]) {
                         // Evitar comparar el mismo punto
-                        if (p.x != neighbor.x || p.y != neighbor.y) {
+                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
                             double distance = calculateDistance(p, neighbor);
                             minDistance = min(minDistance, distance);
                         }
@@ -104,73 +92,20 @@ double findMinDistanceOptimized(vector<Point>& points) {
 
     return minDistance;
 }
-
-// Funciones auxiliares
-bool compare_x(const Point& a, const Point& b) {
-    return a.x < b.x;
-}
-
-double closest_pair_dist(vector<Point>& arr, int left, int right) {
-    // Caso base donde el tamaño del conjunto es 0, 1 o 2. 
-    if (right - left <= 2) { 
-        // si es 0 o 1, se devuelve infinito
-        double min = numeric_limits<double>::infinity();
-        if (right - left == 2) // si es 2, se devuelve la distancia entre ambos puntos
-        min = calculateDistance(arr[left], arr[left+1]);
-        return min;
-    }
-
-    // Ordenamos los puntos según su coordenada x
-    sort(arr.begin() + left, arr.begin() + right, compare_x);
-
-    // Si no estamos en el caso base, entonces dividimos el conjunto 
-    // en dos partes iguales usando una recta divisoria
-    // Calculamos recursivamente la distancia minima en ambas partes
-    int mid = (left + right) / 2;
-
-    double Lmin = closest_pair_dist(arr, left, mid);
-    double Rmin = closest_pair_dist(arr, mid, right);
-    // Calculamos el minimo entre ambas soluciones
-    double LRmin = min(Lmin, Rmin);
-
-    for (int i = mid-1; i >= left; --i) {
-        if (arr[mid].x - arr[i].x >= LRmin) {
-            break;  // Salir si ya estamos más lejos que la distancia mínima
-        }
-
-        for (int j = mid; j < right; ++j) {
-            double curr_dist = calculateDistance(arr[i], arr[j]);
-            LRmin = min(LRmin, curr_dist);
-        }
-    }
-
-    // retorna la distancia mínima
-    return LRmin;
-}
-
-// Algoritmo
-double divide_and_conquer(vector<Point>& arr) {
-    return closest_pair_dist(arr, 0, arr.size());
-}
-
-
-/*int main() {
-    int n = 100;
-    vector<Point> randomPoints;
-
+void runAlgorithm(int n) {
     // Utilizar el tiempo actual como semilla para mt19937
     unsigned seed = static_cast<unsigned>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
-    mt19937 randomGenerator(seed);
+    mt19937 gen(seed);
 
     cout << "Semilla utilizada: " << seed << endl;
 
-    randomPoints = generateRandomPoints(n, randomGenerator);
+    vector<Point> randomPoints = generateRandomPoints(n, gen);
 
     // Imprimir puntos generados
-    cout << "Puntos generados:" << endl;
+    /*cout << "Puntos generados:" << endl;
     for (const auto& point : randomPoints) {
         cout << "(" << point.x << ", " << point.y << ")" << endl;
-    }
+    }*/
 
     auto start = high_resolution_clock::now();
     double minDistanceUsingUnorderedMap = findMinDistanceOptimized(randomPoints);
@@ -178,7 +113,16 @@ double divide_and_conquer(vector<Point>& arr) {
 
     auto duration = duration_cast<milliseconds>(stop - start);
     cout << "N: " << n << ", Distancia minima: " << minDistanceUsingUnorderedMap << ", Tiempo: " << duration.count() << " ms" << endl;
+}
+
+int main() {
+    int numIterations = 10;
+    int n = 100;
+
+    for (int i = 0; i < 101; ++i) {
+        cout << "\nIteración " << i + 1 << ":\n";
+        runAlgorithm(n);
+    }
 
     return 0;
-}*/
-
+}
