@@ -6,6 +6,8 @@
 #include <random>
 #include <limits>
 
+
+
 using namespace std;
 using namespace std::chrono;
 
@@ -50,6 +52,76 @@ double findMinDistance(vector<Point>& points) {
 
     for (int i=0; i<n-1; i+=2) {
         minDistance = min(minDistance, calculateDistance(points[i], points[i+1]));
+    }
+
+    return minDistance;
+}
+
+
+// Función hash basada en la función de dispersión std::hash
+int customHash(double value) {
+    return std::hash<double>{}(value); // Utilizando la función de dispersión std::hash
+}
+
+int customHash2(double value) {
+    const int prime = 31; // Número primo para la operación de hashing
+    return static_cast<int>(value * prime); // Multiplicación y parte entera como hash
+}
+
+// Función para generar la cuadrícula utilizando la función de hashing std::hash
+unordered_map<int, unordered_map<int, vector<Point>>> generateGrid(vector<Point>& points) {
+    unordered_map<int, unordered_map<int, vector<Point>>> grid;
+
+    for (Point& p : points) {
+        int gridX = customHash2(p.x);
+        int gridY = customHash2(p.y);
+        grid[gridX][gridY].push_back(p);
+    }
+
+    return grid;
+}
+
+
+double findMinDistanceOptimizedCustom(vector<Point>& points) {
+    double minDistance = numeric_limits<double>::infinity();
+   
+
+
+    double d = findMinDistance(points);
+    d /= 2.0;
+
+    // Generar la cuadrícula utilizando la nueva función de hashing
+    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateGrid(points);
+
+
+    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
+
+
+    for (Point& p : points) {
+        int gridX = static_cast<int>(p.x / (d / 2));
+        int gridY = static_cast<int>(p.y / (d / 2));
+        grid[gridX][gridY].push_back(p);
+    }
+
+    for (Point& p : points) {
+        int gridX = static_cast<int>(p.x / d);
+        int gridY = static_cast<int>(p.y / d);
+
+        for (int i = gridX - 1; i <= gridX + 1; ++i) {
+            for (int j = gridY - 1; j <= gridY + 1; ++j) {
+                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
+
+                    for (Point& neighbor : grid[i][j]) {
+                        // Evitar comparar el mismo punto
+                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
+                            double distance = calculateDistance(p, neighbor);
+                            minDistance = min(minDistance, distance);
+                        }
+                    }
+                    
+                }
+            }
+        }
     }
 
     return minDistance;
@@ -109,14 +181,14 @@ void runAlgorithm(int n) {
     cout << "N: " << n << ", Distancia minima: " << minDistanceUsingUnorderedMap << ", Tiempo: " << duration.count() << " ms" << endl;
 }
 
-int main() {
-    int numIterations = 10;
-    int n = 100;
+//int main() {
+    //int numIterations = 10;
+    //int n = 100;
 
-    for (int i = 0; i < 100; ++i) {
-        cout << "\nIteración " << i + 1 << ":\n";
-        runAlgorithm(n);
-    }
+    //for (int i = 0; i < 100; ++i) {
+        //cout << "\nIteracion " << i + 1 << ":\n";
+        //runAlgorithm(n);
+    //}
 
-    return 0;
-}
+    //return 0;
+//}

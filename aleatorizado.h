@@ -41,6 +41,7 @@ vector<pair<Point, Point>> generateRandomPointPairs(int n) {
     }
 
     return pointPairs;
+    
 }
 
 
@@ -74,9 +75,9 @@ private:
 };
 
 
-double randomizedAlgorithm(int n) {
+double randomizedAlgorithm( vector<pair<Point, Point>> pointPairs) {
     // se generan los n pares
-    vector<pair<Point, Point>> pointPairs = generateRandomPointPairs(n);
+    
 
     // Distancia mínima entre los puntos de cada par
     double d = numeric_limits<double>::max();
