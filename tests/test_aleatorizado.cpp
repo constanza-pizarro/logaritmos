@@ -17,7 +17,7 @@ int main() {
     cout << "Semilla utilizada: " << seed << endl;
 
     std::ofstream archivo("file.txt"); // Abre el archivo en modo escritura
-
+    vector<Point> randomPointsCpy;
     
 
     for (int n =5000000; n<=50000000; n= n+5000000){
@@ -26,17 +26,61 @@ int main() {
         cout <<"N ="<< n << endl;
         archivo <<"N ="<< n <<std::endl;
         double duration_total = 0;
-        for(int intentos= 0; intentos <=20; intentos++){
+        double duration_total2 = 0;
+        double duration_total3 = 0;
+
+
+
+        for(int intentos= 1; intentos <=3; intentos++){
+
             vector<Point> randomPoints = generateRandomPoints(n, gen);
-            auto start = high_resolution_clock::now();
-            double result= findMinDistanceOptimized(randomPoints);
-            auto stop = high_resolution_clock::now();
-            auto duration = duration_cast<milliseconds>(stop - start);
+            randomPointsCpy=randomPoints;
+
+
+            //archivo <<"Hashing method = City Hashing"<<std::endl;
+            //auto start = high_resolution_clock::now();
+            //double result= findMinDistanceOptimizedCustom(randomPointsCpy, generateGridCity);
+            //auto stop = high_resolution_clock::now();
+            //auto duration = duration_cast<milliseconds>(stop - start);
+            ////cout <<"Intento numero "<< intentos << " terminado" << endl;
+            //archivo <<"duration "<<duration.count() <<"ms" <<std::endl; // Escribe cada número seguido de un salto de línea
+//
+          
+
+            archivo <<"Hashing method = Mersenne Hashing"<<std::endl;
+            auto start2 = high_resolution_clock::now();
+            double result2= findMinDistanceOptimizedMersenne(randomPoints);
+            cout <<"distancia = "<< result2<< endl;
+            auto stop2 = high_resolution_clock::now();
+            auto duration2 = duration_cast<milliseconds>(stop2 - start2);
+            //cout <<"Intento numero "<< intentos << " terminado" << endl;
+            archivo <<"duration "<<duration2.count() <<"ms" <<std::endl; // Escribe cada número seguido de un salto de línea
+            duration_total2 += duration2.count();
+
+
+            archivo <<"Hashing method = Native"<<std::endl;
+            auto start3 = high_resolution_clock::now();
+            double result3= findMinDistanceOptimized(randomPointsCpy);
+            cout <<"distancia = "<< result3<< endl;
+            auto stop3 = high_resolution_clock::now();
+            auto duration3 = duration_cast<milliseconds>(stop3 - start3);
+            //cout <<"Intento numero "<< intentos << " terminado" << endl;
+            archivo <<"duration "<<duration3.count() <<"ms" <<std::endl; // Escribe cada número seguido de un salto de línea
+            duration_total3 += duration3.count();
+
+
             cout <<"Intento numero "<< intentos << " terminado" << endl;
-            archivo <<"duration "<<duration.count() <<"ms" <<std::endl; // Escribe cada número seguido de un salto de línea
-            duration_total += duration.count();
-            if (intentos == 20){ archivo <<"duration mean "<<duration_total/20 <<" ms" <<std::endl;} // Escribe cada número seguido de un salto de línea}
+            archivo <<"Intento numero "<< intentos << " terminado" <<std::endl; // Escribe cada número seguido de un salto de línea
+            archivo <<"\n"<<std::endl;
+
+            //duration_total += duration.count();
+            if (intentos == 3){ 
+                                archivo <<"duration mean Mersenne "<<duration_total2/3 <<" ms" <<std::endl;
+                                archivo <<"duration mean Native "<<duration_total3/3 <<" ms" <<std::endl;
+            } // Escribe cada número seguido de un salto de línea}
         }
+
+
 
     
         //auto start = high_resolution_clock::now();

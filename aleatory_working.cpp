@@ -5,6 +5,10 @@
 #include <chrono>
 #include <random>
 #include <limits>
+#include <cstdint>
+
+
+
 
 
 
@@ -18,6 +22,10 @@ struct Point {
 double calculateDistance(Point p1, Point p2) {
     return sqrt(pow((p2.x - p1.x), 2) + pow((p2.y - p1.y), 2));
 }
+
+
+
+
 
 vector<Point> generateRandomPoints(int n, mt19937& gen) {
     vector<Point> points;
@@ -58,23 +66,76 @@ double findMinDistance(vector<Point>& points) {
 }
 
 
+
 // Función hash basada en la función de dispersión std::hash
 int customHash(double value) {
     return std::hash<double>{}(value); // Utilizando la función de dispersión std::hash
 }
 
-int customHash2(double value) {
-    const int prime = 31; // Número primo para la operación de hashing
-    return static_cast<int>(value * prime); // Multiplicación y parte entera como hash
+int customHashMersenne(double value) {
+    // Número primo de Mersenne M31 (2^31 - 1)
+    const int mersenne_prime = (1 << 31) - 1;
+
+    // Convertir el valor en un entero y aplicar módulo con el número primo de Mersenne
+    return static_cast<int>(value) % mersenne_prime;
 }
+
+
+
+// Función de hash utilizando CityHash
+//size_t customHashCity(const Point& p) {
+    //return CityHash64(reinterpret_cast<const char*>(&p), sizeof(Point));
+//}
+
+
+
+
+
+unordered_map<int, unordered_map<int, vector<Point>>> generateGridMersenne(vector<Point>& points) {
+    unordered_map<int, unordered_map<int, vector<Point>>> grid;
+
+    for (Point& p : points) {
+        int gridX = customHashMersenne(p.x);
+        int gridY = customHashMersenne(p.y);
+        grid[gridX][gridY].push_back(p);
+    }
+
+    return grid;
+}
+
+//unordered_map<size_t, unordered_map<size_t, vector<Point>>> generateGridMurmur(vector<Point>& points) {
+//    unordered_map<size_t, unordered_map<size_t, vector<Point>>> grid;
+//
+//    for (Point& p : points) {
+//        size_t gridX = customHashMurmur(p.x);
+//        size_t gridY = customHashMurmur(p.y);
+//        grid[gridX][gridY].push_back(p);
+//    }
+//
+//    return grid;
+//}
+//
+//unordered_map<size_t, unordered_map<size_t, vector<Point>>> generateGridCity(vector<Point>& points) {
+//    unordered_map<size_t, unordered_map<size_t, vector<Point>>> grid;
+//
+//    for (Point& p : points) {
+//        size_t gridX = customHashCity(p.x);
+//        size_t gridY = customHashCity(p.y);
+//        grid[gridX][gridY].push_back(p);
+//    }
+//
+//    return grid;
+//}
+
+
 
 // Función para generar la cuadrícula utilizando la función de hashing std::hash
 unordered_map<int, unordered_map<int, vector<Point>>> generateGrid(vector<Point>& points) {
     unordered_map<int, unordered_map<int, vector<Point>>> grid;
 
     for (Point& p : points) {
-        int gridX = customHash2(p.x);
-        int gridY = customHash2(p.y);
+        int gridX = customHash(p.x);
+        int gridY = customHash(p.y);
         grid[gridX][gridY].push_back(p);
     }
 
@@ -82,7 +143,53 @@ unordered_map<int, unordered_map<int, vector<Point>>> generateGrid(vector<Point>
 }
 
 
-double findMinDistanceOptimizedCustom(vector<Point>& points) {
+double findMinDistanceOptimizedMersenne(vector<Point>& points) {
+    double minDistance = numeric_limits<double>::infinity();
+   
+
+
+    double d = findMinDistance(points);
+    d /= 2.0;
+
+    // Generar la cuadrícula utilizando la nueva función de hashing
+    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateGridMersenne(points);
+
+
+    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
+
+
+    for (Point& p : points) {
+        int gridX = static_cast<int>(p.x / (d / 2));
+        int gridY = static_cast<int>(p.y / (d / 2));
+        grid[gridX][gridY].push_back(p);
+    }
+
+    for (Point& p : points) {
+        int gridX = static_cast<int>(p.x / d);
+        int gridY = static_cast<int>(p.y / d);
+
+        for (int i = gridX - 1; i <= gridX + 1; ++i) {
+            for (int j = gridY - 1; j <= gridY + 1; ++j) {
+                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
+
+                    for (Point& neighbor : grid[i][j]) {
+                        // Evitar comparar el mismo punto
+                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
+                            double distance = calculateDistance(p, neighbor);
+                            minDistance = min(minDistance, distance);
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
+
+    return minDistance;
+}
+
+
+double findMinDistanceOptimizedGeneric(vector<Point>& points) {
     double minDistance = numeric_limits<double>::infinity();
    
 
@@ -126,6 +233,12 @@ double findMinDistanceOptimizedCustom(vector<Point>& points) {
 
     return minDistance;
 }
+
+
+
+
+
+
 
 double findMinDistanceOptimized(vector<Point>& points) {
     double minDistance = numeric_limits<double>::infinity();
