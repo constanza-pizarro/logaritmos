@@ -51,7 +51,7 @@ int main() {
             archivo << "-------------------------------- Divide and Conquer --------------------------------" << endl;  
             
             auto beginDAC = high_resolution_clock::now();
-            double resDAC = findMinDivideAndConquer(randomPointsDAC);
+            double resDAC = findMinDistanceDivideAndConquer(randomPointsDAC);
             auto endDAC = high_resolution_clock::now();
 
             if (i == 0) {
@@ -68,7 +68,7 @@ int main() {
             archivo << "-------------------------------- Universal Hashing --------------------------------" << endl;  
             
             auto beginUniv = high_resolution_clock::now();
-            double resUniv = findMindDistanceUniversal(randomPoints, a, b, mersennePrime, hashTableSize);
+            double resUniv = findMinDistanceUniversal(randomPoints, a, b, mersennePrime, hashTableSize);
             auto endUniv = high_resolution_clock::now();
 
             if (i == 0) {

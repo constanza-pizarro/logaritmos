@@ -6,6 +6,11 @@
 #include <random>
 #include <limits>
 #include <cstdint>
+#include <map>
+
+// primo de Mersenne para las funciones de Hashing
+#define K 30
+#define MP (1 << K) - 1
 
 using namespace std;
 
@@ -35,23 +40,15 @@ vector<Point> generateRandomPoints(int n, mt19937& gen) {
     return points;
 }
 
-double minDistancePairs(vector<Point>& points) {
-    double minDistance = numeric_limits<double>::infinity();
-    int n = points.size();
 
-    for (int i=0; i<n-1; i+=2) {
-        minDistance = min(minDistance, calculateDistance(points[i], points[i+1]));
-    }
-
-    return minDistance;
-}
+// ------------ DIVIDIR PARA REINAR ------------
 
 bool compareX(const Point& a, const Point& b) {
     return a.x < b.x;
 }
 
 double closestPairDist(vector<Point>& arr, int left, int right) {
-    // Caso base donde el tamaño del conjunto es 0, 1 o 2. 
+    // Caso base donde el tamaño del conjunto es 0, 1 o 2.
     if (right - left <= 2) { 
         // si es 0 o 1, se devuelve infinito
         double min = numeric_limits<double>::infinity();
@@ -88,250 +85,109 @@ double closestPairDist(vector<Point>& arr, int left, int right) {
     return LRmin;
 }
 
-double findMinDivideAndConquer(vector<Point>& arr) {
+double findMinDistanceDivideAndConquer(vector<Point>& arr) {
     return closestPairDist(arr, 0, arr.size());
 }
 
 
-// ------------------FUNCIONES DE HASHING------------------
+// ------------------ HASHING ------------------
 
-int universalHash(double value, int a, int b, int p, int m) {
-    return ((static_cast<int>(a) * static_cast<int>(value) + b) % p) % m;
+int universalHash(double value, int a, int b, int m) {
+    return ((static_cast<int>(a) * static_cast<int>(value) + b) % MP) % m;
 }
 
-int mersennePrimeHash(double value, int p) {
-    return static_cast<int>(value) % p;
+int mersennePrimeHash(double value, int a, int b, int m) {
+    return static_cast<int>(value) % MP;
 }
 
 // Funciones más rápidas
-int fasterFunctionsHash(double value, int p, int k) {
-    // Convertir el valor en un entero
+int fasterFunctionsHash(double value, int a, int b, int m) {
     int intValue = static_cast<int>(value);
 
-    // Calcular el módulo mersenne_prime de manera eficiente
-    int result = (intValue & p) + (intValue >> k);
+    int result = (intValue & MP) + (intValue >> K);
 
-    if (result >= p) result -= p;
+    // Calcular result mód MP de manera eficiente
+    if (result >= MP) result -= MP;
 
     return result;
 }
 
-// Función hash basada en la función de dispersión std::hash
-int genericHash(double value) {
-    return hash<double>{}(value); // Utilizando la función de dispersión std::hash
-}
 
-// ---------------------GENERAR GRILLAS---------------------
+// ------------------ GRILLAS ------------------
 
-unordered_map<int, unordered_map<int, vector<Point>>> generateUniversalGrid(vector<Point>& points, int a, int b, int p, int m) {
-    unordered_map<int, unordered_map<int, vector<Point>>> grid;
-    grid.reserve(m);
-
-    for (Point& point : points) {
-        int gridX = universalHash(point.x, a, b, p, m);
-        int gridY = universalHash(point.y, a, b, p, m);
-        grid[gridX][gridY].push_back(point);
-    }
-
-    return grid;
-}
-
-unordered_map<int, unordered_map<int, vector<Point>>> generateMersenneGrid(vector<Point>& points, int p, int m) {
-    unordered_map<int, unordered_map<int, vector<Point>>> grid;
-    grid.reserve(m);
-
-    for (Point& point : points) {
-        int gridX = mersennePrimeHash(point.x, p);
-        int gridY = mersennePrimeHash(point.y, p);
-        grid[gridX][gridY].push_back(point);
-    }
-
-    return grid;
-}
-
-unordered_map<int, unordered_map<int, vector<Point>>> generateFasterFunctionsGrid(vector<Point>& points, int p, int k, int m) {
-    unordered_map<int, unordered_map<int, vector<Point>>> grid;
-    grid.reserve(m);
-
-    for (Point& point : points) {
-        int gridX = fasterFunctionsHash(point.x, p, k);
-        int gridY = fasterFunctionsHash(point.y, p, k);
-        grid[gridX][gridY].push_back(point);
-    }
-
-    return grid;
-}
-
-// Función para generar la cuadrícula utilizando la función de hashing std::hash
-unordered_map<int, unordered_map<int, vector<Point>>> generateGenericGrid(vector<Point>& points, int m) {
-    unordered_map<int, unordered_map<int, vector<Point>>> grid;
-    grid.reserve(m);
-
-    for (Point& point : points) {
-        int gridX = genericHash(point.x);
-        int gridY = genericHash(point.y);
-        grid[gridX][gridY].push_back(point);
-    }
-
-    return grid;
-}
-
-// -------------------------HASHING-------------------------
-
-double findMindDistanceUniversal(vector<Point>& points, int a, int b, int p, int m) {
-    double minDistance = numeric_limits<double>::infinity();
-
-    double d = minDistancePairs(points);
-    d/= 2.0;
-
-    // Generar la cuadrícula 
-    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateUniversalGrid(points, a, b, p, m);
-
-    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
-    for (Point& p : points) {
-        int gridX = static_cast<int>(p.x / (d / 2));
-        int gridY = static_cast<int>(p.y / (d / 2));
-        grid[gridX][gridY].push_back(p);
-    }
-
-    for (Point& p : points) {
-        int gridX = static_cast<int>(p.x / d);
-        int gridY = static_cast<int>(p.y / d);
-
-        for (int i = gridX - 1; i <= gridX + 1; ++i) {
-            for (int j = gridY - 1; j <= gridY + 1; ++j) {
-                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
-
-                    for (Point& neighbor : grid[i][j]) {
-                        // Evitar comparar el mismo punto
-                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
-                            double distance = calculateDistance(p, neighbor);
-                            minDistance = min(minDistance, distance);
-                        }
-                    }
-                    
-                }
+vector<Point> getNeighboringPoints(const map<pair<int, int>, vector<Point>>& gridMap, int gridX, int gridY) {
+    vector<Point> neighboringPoints;
+    for (int i = gridX - 1; i <= gridX + 1; ++i) {
+        for (int j = gridY - 1; j <= gridY + 1; ++j) {
+            pair<int, int> gridKey(i, j);
+            if (gridMap.find(gridKey) != gridMap.end()) {
+                const vector<Point>& points = gridMap.at(gridKey);
+                neighboringPoints.insert(neighboringPoints.end(), points.begin(), points.end());
             }
         }
+    }
+
+    return neighboringPoints;
+}
+
+map<pair<int, int>, vector<Point>> groupPointsInGrid(const vector<Point>& points, double minDistance, int hashFun(double value, int a, int b, int m), int a, int b, int m) {
+    map<pair<int, int>, vector<Point>> gridMap;
+
+    for (const Point& point : points) {
+        int gridX = static_cast<int>(hashFun(point.x, a, b, m) / minDistance);
+        int gridY = static_cast<int>(hashFun(point.y, a, b, m) / minDistance);
+
+        pair<int, int> gridKey(gridX, gridY);
+
+        // Insertar el punto en la grilla correspondiente
+        gridMap[gridKey].push_back(point);
+    }
+
+    return gridMap;
+}
+
+double compareDistances(const vector<Point>& points, const map<pair<int, int>, vector<Point>>& gridMap, double minDistance, int hashFun(double value, int a, int b, int m), int a, int b, int m) {
+    double newMinDistance = minDistance;
+
+    for (const Point& point : points) {
+        int gridX = static_cast<int>(hashFun(point.x, a, b, m) / minDistance);
+        int gridY = static_cast<int>(hashFun(point.y, a, b, m) / minDistance);
+
+        vector<Point> neighboringPoints = getNeighboringPoints(gridMap, gridX, gridY);
+        for (const Point& neighborPoint : neighboringPoints) {
+            double distance = calculateDistance(point, neighborPoint);
+            if (distance > 0 && distance < newMinDistance) {
+                newMinDistance = distance;
+            }
+        }
+    }
+
+    return newMinDistance;
+}
+
+double minBetweenPairs(vector<Point> points) {
+    srand(static_cast<unsigned>(time(nullptr)));
+    double minDistance = numeric_limits<double>::max();
+
+    for (int i = 0; i < points.size(); ++i) {
+        int index1 = rand() % points.size();
+        int index2 = rand() % points.size();
+        while (index1 == index2) {
+            index2 = rand() % points.size();
+        }
+
+        double distance = calculateDistance(points[index1], points[index2]);
+        minDistance = min(minDistance, distance);
     }
 
     return minDistance;
 }
 
-double findMinDistanceMersenne(vector<Point>& points, int p, int m) {
-    double minDistance = numeric_limits<double>::infinity();
+double findMinDistanceHash(vector<Point> points, int hashFun(double value, int a, int b, int m), int a, int b, int m) {
+    double minDistance = minBetweenPairs(points);
 
-    double d = minDistancePairs(points);
-    d /= 2.0;
+    map<pair<int, int>, vector<Point>> gridMap = groupPointsInGrid(points, minDistance, hashFun, a, b, m);
 
-    // Generar la cuadrícula utilizando Mersenne Hashing
-    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateMersenneGrid(points, p, m);
+    return compareDistances(points, gridMap, minDistance, hashFun, a, b, m);
 
-    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
-    for (Point& point : points) {
-        int gridX = static_cast<int>(point.x / (d / 2));
-        int gridY = static_cast<int>(point.y / (d / 2));
-        grid[gridX][gridY].push_back(point);
-    }
-
-    // Encontrar la distancia mínima entre puntos vecinos en la cuadrícula
-    for (Point& point : points) {
-        int gridX = static_cast<int>(point.x / d);
-        int gridY = static_cast<int>(point.y / d);
-
-        for (int i = gridX - 1; i <= gridX + 1; ++i) {
-            for (int j = gridY - 1; j <= gridY + 1; ++j) {
-                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
-                    for (Point& neighbor : grid[i][j]) {
-                        // Evitar comparar el mismo punto
-                        if (neighbor.x != point.x || neighbor.y != point.y) {
-                            double distance = calculateDistance(point, neighbor);
-                            minDistance = min(minDistance, distance);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return minDistance;
-}
-
-double findMinDistanceFasterFunctions(vector<Point>& points, int p, int k, int m) {
-    double minDistance = numeric_limits<double>::infinity();
-
-    double d = minDistancePairs(points);
-    d /= 2.0;
-
-    // Generar la cuadrícula
-    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateFasterFunctionsGrid(points, p, k, m);
-
-    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
-    for (Point& point : points) {
-        int gridX = static_cast<int>(point.x / (d / 2));
-        int gridY = static_cast<int>(point.y / (d / 2));
-        grid[gridX][gridY].push_back(point);
-    }
-
-    // Encontrar la distancia mínima entre puntos vecinos en la cuadrícula
-    for (Point& point : points) {
-        int gridX = static_cast<int>(point.x / d);
-        int gridY = static_cast<int>(point.y / d);
-
-        for (int i = gridX - 1; i <= gridX + 1; ++i) {
-            for (int j = gridY - 1; j <= gridY + 1; ++j) {
-                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
-                    for (Point& neighbor : grid[i][j]) {
-                        // Evitar comparar el mismo punto
-                        if (neighbor.x != point.x || neighbor.y != point.y) {
-                            double distance = calculateDistance(point, neighbor);
-                            minDistance = min(minDistance, distance);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return minDistance;
-}
-
-double findMinDistanceGeneric(vector<Point>& points, int m) {
-    double minDistance = numeric_limits<double>::infinity();
-
-    double d = minDistancePairs(points);
-    d /= 2.0;
-
-    // Generar la cuadrícula
-    unordered_map<int, unordered_map<int, vector<Point>>> grid = generateGenericGrid(points, m);
-
-    // Actualizar el valor de d para tener celdas de cuadrícula apropiadas
-    for (Point& p : points) {
-        int gridX = static_cast<int>(p.x / (d / 2));
-        int gridY = static_cast<int>(p.y / (d / 2));
-        grid[gridX][gridY].push_back(p);
-    }
-
-    for (Point& p : points) {
-        int gridX = static_cast<int>(p.x / d);
-        int gridY = static_cast<int>(p.y / d);
-
-        for (int i = gridX - 1; i <= gridX + 1; ++i) {
-            for (int j = gridY - 1; j <= gridY + 1; ++j) {
-                if (grid.find(i) != grid.end() && grid[i].find(j) != grid[i].end()) {
-
-                    for (Point& neighbor : grid[i][j]) {
-                        // Evitar comparar el mismo punto
-                        if (fabs(neighbor.x - p.x) > 1e-9 || fabs(neighbor.y - p.y) > 1e-9) {
-                            double distance = calculateDistance(p, neighbor);
-                            minDistance = min(minDistance, distance);
-                        }
-                    }
-                    
-                }
-            }
-        }
-    }
-
-    return minDistance;
 }
