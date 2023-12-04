@@ -9,8 +9,6 @@
 #include <chrono>
 #include <ctime> // for clock_t, clock(), CLOCKS_PER_SEC
 #include <cmath> // for std::abs
-//#include "aleatorizado.h"
-//#include "div_and_con.h"
 #include "dump.h"
 
 using namespace chrono;
